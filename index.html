@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Un viaggio ti aspetta</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Il Viaggio">
+<meta name="theme-color" content="#FAFAF8">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --paper: #FAFAF8;
+    --paper-dim: #F1EFE9;
+    --ink: #1C1C1A;
+    --ink-soft: #6B6862;
+    --sky: #5B7C99;
+    --sky-dim: #E8EEF2;
+    --coral: #D67F63;
+    --coral-dim: #F7E9E3;
+    --gold: #C9A24B;
+    --gold-dim: #F6EFDC;
+    --line: #E4E1D8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding: 24px;
+  }
+
+  .serif { font-family: 'Fraunces', serif; }
+
+  #app {
+    width: 100%;
+    max-width: 480px;
+    position: relative;
+  }
+
+  .screen {
+    display: none;
+    animation: fadeIn 0.6s ease;
+  }
+  .screen.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .progress {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 40px;
+  }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--line);
+    transition: background 0.4s ease, transform 0.4s ease;
+  }
+  .dot.done { background: var(--sky); }
+  .dot.current { background: var(--ink); transform: scale(1.3); }
+
+  .card {
+    text-align: center;
+  }
+
+  .eyebrow {
+    color: var(--ink-soft);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 32px;
+    line-height: 1.25;
+    margin-bottom: 16px;
+  }
+
+  p.lead {
+    color: var(--ink-soft);
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 14px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn:disabled { opacity: 0.35; cursor: default; }
+  .btn:disabled:active { transform: none; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+  }
+
+  .plane-mark {
+    font-size: 40px;
+    margin-bottom: 28px;
+    display: block;
+  }
+
+  .home-hint {
+    margin-top: 28px;
+    padding: 14px 16px;
+    background: var(--paper-dim);
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    text-align: left;
+  }
+  .home-hint b { color: var(--ink); }
+
+  .cipher-box {
+    background: var(--paper-dim);
+    border-radius: 16px;
+    padding: 28px 20px;
+    margin-bottom: 24px;
+    transition: background 0.4s ease, box-shadow 0.4s ease;
+  }
+
+  .cipher-box.state-wrong {
+    background: var(--coral-dim);
+    animation: shakeBox 0.5s ease;
+  }
+  .cipher-box.state-right {
+    background: var(--sky-dim);
+    box-shadow: 0 0 0 2px var(--sky) inset;
+  }
+
+  @keyframes shakeBox {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-5px); }
+    80% { transform: translateX(5px); }
+  }
+
+  .cipher-text {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+    min-height: 66px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    word-break: break-word;
+  }
+
+  .cipher-text .ch {
+    display: inline-block;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.5s ease, opacity 0.4s ease;
+    color: var(--ink-soft);
+  }
+  .cipher-text .ch.space { width: 0.4em; }
+  .cipher-text .ch.spin {
+    transform: rotateX(360deg) scale(1.15);
+  }
+  .cipher-text.unlocked .ch {
+    color: var(--sky);
+  }
+
+  .key-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .key-input {
+    flex: 1;
+    padding: 16px 18px;
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.05em;
+    background: var(--paper);
+    color: var(--ink);
+    outline: none;
+    text-align: center;
+    transition: border-color 0.2s ease;
+  }
+  .key-input:focus { border-color: var(--sky); }
+  .key-input.wrong {
+    animation: shake 0.4s ease;
+    border-color: var(--coral);
+  }
+  .key-input.right {
+    border-color: var(--sky);
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
+  .key-submit {
+    width: 52px;
+    height: 52px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: 14px;
+    background: var(--ink);
+    color: var(--paper);
+    font-size: 20px;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.3s ease;
+  }
+  .key-submit:active { transform: scale(0.94); }
+
+  .cipher-status {
+    margin-top: 16px;
+    font-size: 13px;
+    min-height: 18px;
+    font-weight: 500;
+  }
+  .cipher-status.error { color: var(--coral); }
+  .cipher-status.success { color: var(--sky); }
+
+  .hint-toggle {
+    margin-top: 18px;
+    font-size: 13px;
+    color: var(--sky);
+    cursor: pointer;
+    display: inline-block;
+  }
+  .hint-text {
+    display: none;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+  .hint-text.show { display: block; }
+
+  /* ---------- anagramma drag & drop ---------- */
+  .anagram-slots {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+
+  .anagram-slot {
+    width: 40px;
+    height: 48px;
+    border: 1.5px dashed var(--line);
+    border-radius: 10px;
+    background: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    color: var(--ink);
+    transition: border-color 0.2s ease, background 0.2s ease;
+    flex-shrink: 0;
+  }
+  .anagram-slot.gap-slot {
+    border: none;
+    background: var(--ink-soft);
+    width: 16px;
+  }
+  .anagram-slot.filled {
+    border-style: solid;
+    border-color: var(--sky);
+    background: var(--sky-dim);
+  }
+  .anagram-slot.drag-over {
+    border-color: var(--gold);
+    background: var(--gold-dim);
+  }
+
+  .anagram-tray {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    padding: 20px 14px;
+    background: var(--paper-dim);
+    border-radius: 16px;
+    margin-bottom: 24px;
+    min-height: 68px;
+  }
+
+  .letter-tile {
+    width: 44px;
+    height: 48px;
+    border-radius: 10px;
+    background: var(--paper);
+    border: 1.5px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    color: var(--ink);
+    cursor: grab;
+    box-shadow: 0 2px 6px rgba(28,28,26,0.06);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: transform 0.15s ease, opacity 0.2s ease, box-shadow 0.15s ease;
+  }
+  .letter-tile.dragging {
+    opacity: 0.35;
+  }
+  .letter-tile.placed {
+    display: none;
+  }
+  .letter-tile.floating {
+    position: fixed;
+    z-index: 50;
+    pointer-events: none;
+    box-shadow: 0 10px 24px -6px rgba(28,28,26,0.3);
+    transform: scale(1.08);
+  }
+  .letter-tile.pop-back {
+    animation: popBack 0.3s ease;
+  }
+  @keyframes popBack {
+    0% { transform: scale(0.7); }
+    60% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  .anagram-slot.wrong-flash {
+    animation: slotWrong 0.5s ease;
+    border-color: var(--coral) !important;
+    background: var(--coral-dim) !important;
+  }
+  @keyframes slotWrong {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+
+  .anagram-slot.right-flash {
+    animation: slotRight 0.4s ease;
+  }
+  @keyframes slotRight {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+
+  .input-field {
+    width: 100%;
+    padding: 16px 18px;
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    background: var(--paper);
+    color: var(--ink);
+    outline: none;
+    text-align: center;
+    transition: border-color 0.2s ease;
+    margin-bottom: 14px;
+  }
+  .input-field:focus { border-color: var(--sky); }
+  .input-field.shake {
+    animation: shake 0.4s ease;
+    border-color: var(--coral);
+  }
+
+  .feedback {
+    font-size: 13px;
+    min-height: 18px;
+    margin-bottom: 18px;
+  }
+  .feedback.error { color: var(--coral); }
+  .feedback.success { color: var(--sky); }
+
+  .riddle-photo {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: var(--paper-dim);
+    border-radius: 16px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    font-size: 13px;
+    overflow: hidden;
+  }
+  .riddle-photo img { width: 100%; height: 100%; object-fit: cover; }
+
+  .date-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .date-select {
+    flex: 1;
+    padding: 16px 8px;
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    text-align: center;
+    outline: none;
+  }
+  .date-select:focus { border-color: var(--sky); }
+
+  .quiz-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .quiz-option {
+    padding: 16px 18px;
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+  }
+  .quiz-option:active { transform: scale(0.99); }
+  .quiz-option.selected-wrong {
+    border-color: var(--coral);
+    background: var(--coral-dim);
+  }
+  .quiz-option.selected-right {
+    border-color: var(--sky);
+    background: var(--sky-dim);
+  }
+
+  .reveal-stage {
+    position: relative;
+    min-height: 320px;
+    padding: 40px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .burst {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .spark {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    opacity: 0;
+    background: var(--gold);
+  }
+  .spark.sq { border-radius: 2px; }
+  .spark.show {
+    animation: sparkFly 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  @keyframes sparkFly {
+    0% { opacity: 1; transform: translate(-50%, -50%) rotate(0deg) scale(0.4); }
+    70% { opacity: 1; }
+    100% {
+      opacity: 0;
+      transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(var(--rot)) scale(1);
+    }
+  }
+
+  .glow {
+    position: absolute;
+    width: 280px;
+    height: 280px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(201,162,75,0.35) 0%, rgba(201,162,75,0) 70%);
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  .glow.show {
+    animation: glowPulse 1.6s ease forwards;
+  }
+  @keyframes glowPulse {
+    0% { opacity: 0; transform: scale(0.6); }
+    35% { opacity: 1; transform: scale(1.15); }
+    100% { opacity: 0.5; transform: scale(1); }
+  }
+
+  .ticket-frame {
+    position: relative;
+    width: 80%;
+    max-width: 620px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px -20px rgba(28,28,26,0.35), 0 0 0 1px rgba(28,28,26,0.04);
+    opacity: 0;
+    transform: translateY(40px) scale(0.8) rotate(-4deg);
+    z-index: 2;
+  }
+  .ticket-frame.reveal {
+    animation: ticketWow 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .ticket-frame img {
+    width: 100%;
+    display: block;
+  }
+  .ticket-placeholder {
+    padding: 60px 24px;
+    background: var(--paper-dim);
+    color: var(--ink-soft);
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  @keyframes ticketWow {
+    0% { opacity: 0; transform: translateY(40px) scale(0.75) rotate(-6deg); }
+    55% { opacity: 1; transform: translateY(-10px) scale(1.06) rotate(2deg); }
+    75% { transform: translateY(4px) scale(0.99) rotate(-1deg); }
+    100% { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+  }
+
+  .final-note {
+    white-space: pre-line;
+    margin-top: 8px;
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    opacity: 0;
+  }
+  .final-note.show {
+    animation: noteIn 0.9s ease forwards;
+  }
+  @keyframes noteIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .footer-space { height: 8px; }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <section class="screen active" id="screen-0">
+    <div class="card">
+      <span class="plane-mark">❤️</span>
+      <p class="eyebrow">09.09.2026</p>
+      <h1 class="serif">Un regalo ti<br>aspetta.</h1>
+      <p class="lead">Ma prima, dovrai guadagnartelo.</p>
+      <button class="btn" onclick="goTo(1)">Comincia</button>
+      <div class="home-hint">
+        Suggerimento: Tocca l'icona di condivisione di Safari e scegli "Aggiungi alla schermata Home"
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-1">
+    <div class="progress">
+      <div class="dot current"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="card">
+      <p class="eyebrow">Primo passo</p>
+      <h1 class="serif">Un messaggio<br>nascosto.</h1>
+
+      <div class="cipher-box" id="cipherBox">
+        <div class="cipher-text cipher-locked" id="cipherDisplay"></div>
+      </div>
+
+      <div class="key-row">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" class="key-input" id="cipherKeyInput" placeholder="Inserisci la chiave" autocomplete="off">
+        <button class="key-submit" id="cipherSubmit" onclick="checkCipherKey()">→</button>
+      </div>
+      <div class="cipher-status" id="cipherStatus"></div>
+
+      <span class="hint-toggle" onclick="toggleHint()">Serve un aiuto?</span>
+      <p class="hint-text" id="cipherHint">Cerca su internet "Cifrario di Giulio Cesare": https://it.wikipedia.org/wiki/Cifrario_di_Giulio_Cesare . Trova la chiave corretta: un numero.</p>
+
+      <div class="footer-space"></div>
+      <button class="btn" id="cipherContinue" disabled onclick="goTo(2)">Continua</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-2">
+    <div class="progress">
+      <div class="dot done"></div>
+      <div class="dot current"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="card">
+      <p class="eyebrow">Secondo passo</p>
+      <h1 class="serif">Un ricordo<br>preciso.</h1>
+
+      <div class="riddle-photo" id="riddlePhoto">
+        <img src="foto.jpeg" alt="Foto del ricordo">
+      </div>
+
+      <p class="lead" id="riddleQuestion">Dove ci siamo baciati per la prima volta?</p>
+
+      <input type="text" class="input-field" id="riddleInput" placeholder="Scrivi qui la risposta" autocomplete="off" autocapitalize="off">
+      <div class="feedback" id="riddleFeedback"></div>
+      <button class="btn" onclick="checkRiddle()">Verifica</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-3">
+    <div class="progress">
+      <div class="dot done"></div>
+      <div class="dot done"></div>
+      <div class="dot current"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="card">
+      <p class="eyebrow">Terzo passo</p>
+      <h1 class="serif" id="quizQuestion">PLACEHOLDER — Qual è stato il nostro primo viaggio insieme?</h1>
+      <div class="quiz-options" id="quizOptions"></div>
+      <div class="feedback" id="quizFeedback"></div>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-4">
+    <div class="progress">
+      <div class="dot done"></div>
+      <div class="dot done"></div>
+      <div class="dot done"></div>
+      <div class="dot current"></div>
+      <div class="dot"></div>
+    </div>
+    <div class="card">
+      <p class="eyebrow">Quarto passo</p>
+      <h1 class="serif">Rimetti le<br>lettere a posto.</h1>
+      <p class="lead" id="anagramHint">PLACEHOLDER — È il soprannome che ti ho dato.</p>
+
+      <div class="anagram-slots" id="anagramSlots"></div>
+
+      <div class="anagram-tray" id="anagramTray"></div>
+
+      <div class="feedback" id="anagramFeedback"></div>
+      <button class="btn-ghost btn" id="anagramReset" onclick="resetAnagram()" style="margin-bottom:10px;">Ricomincia</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-5">
+    <div class="progress">
+      <div class="dot done"></div>
+      <div class="dot done"></div>
+      <div class="dot done"></div>
+      <div class="dot done"></div>
+      <div class="dot current"></div>
+    </div>
+    <div class="card">
+      <p class="eyebrow">Quinto e ultimo passo</p>
+      <h1 class="serif">Una data<br>importante</h1>
+      <p class="lead" id="dateQuestion">PLACEHOLDER — Qual è la data del nostro primo appuntamento?</p>
+
+      <div class="date-row">
+        <select class="date-select" id="dayInput">
+          <option value="">Giorno</option>
+        </select>
+        <select class="date-select" id="monthInput">
+          <option value="">Mese</option>
+        </select>
+        <select class="date-select" id="yearInput">
+          <option value="">Anno</option>
+        </select>
+      </div>
+      <div class="feedback" id="dateFeedback"></div>
+      <button class="btn" onclick="checkDate()">Sblocca il regalo</button>
+    </div>
+  </section>
+
+  <section class="screen" id="screen-6">
+    <div class="card">
+
+      <div class="reveal-stage" id="revealStage">
+        <div class="glow" id="revealGlow"></div>
+        <div class="burst" id="revealBurst"></div>
+
+        <div class="ticket-frame" id="ticketFrame">
+          <img id="ticketImage" src="" alt="Il tuo biglietto" style="display:none;">
+          <div id="ticketPlaceholder" class="ticket-placeholder">
+            Qui apparirà l'immagine del biglietto<br>(sostituiscila in CONFIG.ticketImageSrc)
+          </div>
+        </div>
+      </div>
+
+      <p class="final-note" id="finalNote">PLACEHOLDER — un pensiero finale scritto da te, per lei, da leggere proprio in questo momento.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  const CONFIG = {
+    cipherPlainText: "BUON COMPLEANNO",
+    shiftCorrect: 8,
+
+    riddleQuestion: "Dove ci siamo baciati per la prima volta?",
+    riddleAnswers: ["piscina", "piscina di marostica", "piscina marostica"],
+
+    quizQuestion: "Qual è stato il nostro primo viaggio insieme?",
+    quizOptions: ["Parigi", "Lago di Garda", "New York", "Nizza"],
+    quizCorrectIndex: 1,
+
+    anagramHint: "È il tuo soprannome...",
+    anagramAnswer: "KIKETTA",
+    anagramAcceptedVariants: ["kiketta"],
+    anagramExtraLetters: 5, // numero di lettere "trappola" in più da aggiungere al vassoio
+
+    dateQuestion: "",
+    correctDay: 27,
+    correctMonth: 1,
+    correctYear: 2018,
+
+    ticketImageSrc: "boarding_pass.png",
+    finalNote: "Da quando ti conosco, ogni posto è più bello se ci sei tu.\nNon vedo l'ora di scoprire anche questo insieme a te.\nBuon compleanno. Ti amo ❤️"
+
+  };
+
+  function goTo(n) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen-' + n).classList.add('active');
+    window.scrollTo(0, 0);
+
+    if (n === 1) initCipher();
+    if (n === 3) initQuiz();
+    if (n === 4) initAnagram();
+    if (n === 5) initDateSelectors();
+    if (n === 6) triggerReveal();
+  }
+
+  function caesarShift(text, shift) {
+    return text.split('').map(ch => {
+      const code = ch.charCodeAt(0);
+      if (code >= 65 && code <= 90) {
+        return String.fromCharCode(((code - 65 + shift) % 26 + 26) % 26 + 65);
+      }
+      return ch;
+    }).join('');
+  }
+
+  let cipherEncodedBase;
+  let cipherLocked = true;
+
+  function renderCipherLetters(text) {
+    const el = document.getElementById('cipherDisplay');
+    el.innerHTML = '';
+    text.split('').forEach(ch => {
+      const span = document.createElement('span');
+      span.className = 'ch' + (ch === ' ' ? ' space' : '');
+      span.textContent = ch === ' ' ? '\u00A0' : ch;
+      el.appendChild(span);
+    });
+  }
+
+  function initCipher() {
+    cipherEncodedBase = caesarShift(CONFIG.cipherPlainText, CONFIG.shiftCorrect);
+    renderCipherLetters(cipherEncodedBase);
+    document.getElementById('cipherDisplay').classList.remove('unlocked');
+    document.getElementById('cipherBox').classList.remove('state-wrong', 'state-right');
+    document.getElementById('cipherKeyInput').value = '';
+    document.getElementById('cipherKeyInput').disabled = false;
+    document.getElementById('cipherKeyInput').classList.remove('wrong', 'right');
+    document.getElementById('cipherSubmit').disabled = false;
+    document.getElementById('cipherStatus').textContent = '';
+    document.getElementById('cipherStatus').className = 'cipher-status';
+    document.getElementById('cipherContinue').disabled = true;
+    cipherLocked = true;
+  }
+
+  function animateCipherTransform(targetText, onDone) {
+    const el = document.getElementById('cipherDisplay');
+    const spans = el.querySelectorAll('.ch');
+    const targetChars = targetText.split('');
+
+    spans.forEach((span, i) => {
+      const delay = i * 45;
+      setTimeout(() => {
+        span.classList.add('spin');
+        setTimeout(() => {
+          span.textContent = targetChars[i] === ' ' ? '\u00A0' : targetChars[i];
+        }, 250);
+        setTimeout(() => {
+          span.classList.remove('spin');
+        }, 500);
+      }, delay);
+    });
+
+    const totalTime = spans.length * 45 + 550;
+    if (onDone) setTimeout(onDone, totalTime);
+  }
+
+  function checkCipherKey() {
+    if (!cipherLocked) return;
+
+    const input = document.getElementById('cipherKeyInput');
+    const raw = input.value.trim();
+    const key = parseInt(raw, 10);
+    const box = document.getElementById('cipherBox');
+    const status = document.getElementById('cipherStatus');
+
+    if (raw === '' || isNaN(key)) {
+      status.textContent = 'Inserisci un numero.';
+      status.className = 'cipher-status error';
+      input.classList.add('wrong');
+      setTimeout(() => input.classList.remove('wrong'), 400);
+      return;
+    }
+
+    const isCorrect = (((key % 26) + 26) % 26) === CONFIG.shiftCorrect;
+
+    if (isCorrect) {
+      cipherLocked = false;
+      box.classList.remove('state-wrong');
+      box.classList.add('state-right');
+      input.classList.remove('wrong');
+      input.classList.add('right');
+      input.disabled = true;
+      document.getElementById('cipherSubmit').disabled = true;
+
+      const decoded = caesarShift(cipherEncodedBase, -key);
+      animateCipherTransform(decoded, () => {
+        document.getElementById('cipherDisplay').classList.add('unlocked');
+        status.textContent = 'Chiave corretta.';
+        status.className = 'cipher-status success';
+        document.getElementById('cipherContinue').disabled = false;
+      });
+    } else {
+      box.classList.remove('state-right');
+      box.classList.remove('state-wrong');
+      void box.offsetWidth;
+      box.classList.add('state-wrong');
+      input.classList.remove('right');
+      input.classList.add('wrong');
+      status.textContent = 'Chiave sbagliata. Riprova.';
+      status.className = 'cipher-status error';
+
+      animateCipherTransform(cipherEncodedBase);
+
+      setTimeout(() => {
+        input.classList.remove('wrong');
+        box.classList.remove('state-wrong');
+      }, 500);
+    }
+  }
+
+  document.getElementById('cipherKeyInput')?.addEventListener('keypress', e => {
+    if (e.key === 'Enter') checkCipherKey();
+  });
+
+  function toggleHint() {
+    document.getElementById('cipherHint').classList.toggle('show');
+  }
+
+  function normalize(str) {
+    return str
+      .trim()
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  function checkRiddle() {
+    const input = document.getElementById('riddleInput');
+    const value = normalize(input.value);
+    const feedback = document.getElementById('riddleFeedback');
+
+    const correct = CONFIG.riddleAnswers.some(a => normalize(a) === value);
+
+    if (correct && value.length > 0) {
+      feedback.textContent = 'Esatto.';
+      feedback.className = 'feedback success';
+      setTimeout(() => goTo(3), 500);
+    } else {
+      feedback.textContent = 'Non è questa. Riprova.';
+      feedback.className = 'feedback error';
+      input.classList.add('shake');
+      setTimeout(() => input.classList.remove('shake'), 400);
+    }
+  }
+
+  document.getElementById('riddleInput')?.addEventListener('keypress', e => {
+    if (e.key === 'Enter') checkRiddle();
+  });
+
+  function initQuiz() {
+    document.getElementById('quizQuestion').textContent = CONFIG.quizQuestion;
+    const container = document.getElementById('quizOptions');
+    container.innerHTML = '';
+    document.getElementById('quizFeedback').textContent = '';
+
+    CONFIG.quizOptions.forEach((optionText, index) => {
+      const btn = document.createElement('button');
+      btn.className = 'quiz-option';
+      btn.textContent = optionText;
+      btn.onclick = () => selectQuizOption(index, btn);
+      container.appendChild(btn);
+    });
+  }
+
+  function selectQuizOption(index, btnEl) {
+    const feedback = document.getElementById('quizFeedback');
+    const allButtons = document.querySelectorAll('.quiz-option');
+
+    if (index === CONFIG.quizCorrectIndex) {
+      allButtons.forEach(b => b.disabled = true);
+      btnEl.classList.add('selected-right');
+      feedback.textContent = 'Esatto.';
+      feedback.className = 'feedback success';
+      setTimeout(() => goTo(4), 600);
+    } else {
+      btnEl.classList.add('selected-wrong');
+      feedback.textContent = 'Non è questa. Riprova.';
+      feedback.className = 'feedback error';
+      setTimeout(() => btnEl.classList.remove('selected-wrong'), 500);
+    }
+  }
+
+  /* ==========================================================
+     TAPPA 4 — Anagramma drag & drop (con lettere trappola)
+     ========================================================== */
+  const RANDOM_LETTERS_POOL = "ABCDEFGHILMNOPQRSTUVZ"; // alfabeto italiano semplificato per i distrattori
+
+  let anagramAnswerLetters = [];  // array di {ch, slotIndex|null} — solo lettere reali (no spazi)
+  let anagramLayout = [];         // struttura degli slot: {type:'letter', pos} oppure {type:'gap'}
+  let anagramTiles = [];          // tutte le tessere nel vassoio, comprese quelle extra: {id, ch, isExtra, slot: null|slotIndex}
+  let dragState = null;           // stato del trascinamento corrente
+
+  function buildAnagramLayout(word) {
+    // Crea la struttura degli slot mantenendo la posizione degli spazi tra le parole
+    const layout = [];
+    let letterPos = 0;
+    for (const ch of word) {
+      if (ch === ' ') {
+        layout.push({ type: 'gap' });
+      } else {
+        layout.push({ type: 'letter', pos: letterPos });
+        letterPos++;
+      }
+    }
+    return layout;
+  }
+
+  function initAnagram() {
+    document.getElementById('anagramHint').textContent = CONFIG.anagramHint;
+
+    const word = CONFIG.anagramAnswer.toUpperCase();
+    anagramLayout = buildAnagramLayout(word);
+    const realLetters = word.split('').filter(c => c !== ' ');
+
+    // Tessere reali
+    anagramTiles = realLetters.map((ch, i) => ({
+      id: 'r' + i,
+      ch: ch,
+      isExtra: false,
+      slot: null
+    }));
+
+    // Tessere extra (distrattori) — lettere casuali diverse, per non creare ambiguità sgradevoli
+    const extraCount = CONFIG.anagramExtraLetters || 0;
+    for (let i = 0; i < extraCount; i++) {
+      const randomCh = RANDOM_LETTERS_POOL[Math.floor(Math.random() * RANDOM_LETTERS_POOL.length)];
+      anagramTiles.push({
+        id: 'x' + i,
+        ch: randomCh,
+        isExtra: true,
+        slot: null
+      });
+    }
+
+    // Mescola l'ordine di visualizzazione nel vassoio
+    for (let i = anagramTiles.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [anagramTiles[i], anagramTiles[j]] = [anagramTiles[j], anagramTiles[i]];
+    }
+
+    document.getElementById('anagramFeedback').textContent = '';
+    document.getElementById('anagramFeedback').className = 'feedback';
+
+    renderAnagramSlots();
+    renderAnagramTray();
+  }
+
+  function resetAnagram() {
+    initAnagram();
+  }
+
+  function renderAnagramSlots() {
+    const container = document.getElementById('anagramSlots');
+    container.innerHTML = '';
+    anagramLayout.forEach((item, idx) => {
+      const slotEl = document.createElement('div');
+      if (item.type === 'gap') {
+        slotEl.className = 'anagram-slot gap-slot';
+      } else {
+        slotEl.className = 'anagram-slot';
+        slotEl.dataset.slotIndex = item.pos;
+      }
+      container.appendChild(slotEl);
+    });
+  }
+
+  function renderAnagramTray() {
+    const tray = document.getElementById('anagramTray');
+    tray.innerHTML = '';
+    anagramTiles.forEach(tile => {
+      const el = document.createElement('div');
+      el.className = 'letter-tile' + (tile.slot !== null ? ' placed' : '');
+      el.textContent = tile.ch;
+      el.dataset.tileId = tile.id;
+      attachDragHandlers(el, tile);
+      tray.appendChild(el);
+    });
+  }
+
+  function getSlotElements() {
+    return Array.from(document.querySelectorAll('#anagramSlots .anagram-slot[data-slot-index]'));
+  }
+
+  function attachDragHandlers(el, tile) {
+    el.addEventListener('mousedown', e => startDrag(e, tile, el, false));
+    el.addEventListener('touchstart', e => startDrag(e, tile, el, true), { passive: false });
+  }
+
+  function startDrag(e, tile, el, isTouch) {
+    if (tile.slot !== null) return; // già piazzata, non ritrascinabile da qui
+    e.preventDefault();
+
+    const point = isTouch ? e.touches[0] : e;
+    const rect = el.getBoundingClientRect();
+
+    dragState = {
+      tile, el,
+      offsetX: point.clientX - rect.left,
+      offsetY: point.clientY - rect.top,
+      width: rect.width,
+      height: rect.height,
+      originParent: el.parentElement,
+      currentSlotHover: null
+    };
+
+    el.classList.add('floating');
+    el.style.width = rect.width + 'px';
+    el.style.height = rect.height + 'px';
+    positionFloatingTile(point.clientX, point.clientY);
+    document.body.appendChild(el);
+
+    const moveEvt = isTouch ? 'touchmove' : 'mousemove';
+    const upEvt = isTouch ? 'touchend' : 'mouseup';
+    document.addEventListener(moveEvt, onDragMove, { passive: false });
+    document.addEventListener(upEvt, onDragEnd);
+
+    dragState._moveEvt = moveEvt;
+    dragState._upEvt = upEvt;
+  }
+
+  function positionFloatingTile(clientX, clientY) {
+    const { el, offsetX, offsetY } = dragState;
+    el.style.left = (clientX - offsetX) + 'px';
+    el.style.top = (clientY - offsetY) + 'px';
+  }
+
+  function onDragMove(e) {
+    if (!dragState) return;
+    e.preventDefault();
+    const point = e.touches ? e.touches[0] : e;
+    positionFloatingTile(point.clientX, point.clientY);
+
+    // rileva se siamo sopra uno slot
+    el_hidden_swap(dragState.el, () => {
+      const target = document.elementFromPoint(point.clientX, point.clientY);
+      const slotEl = target && target.closest ? target.closest('.anagram-slot[data-slot-index]') : null;
+
+      getSlotElements().forEach(s => s.classList.remove('drag-over'));
+      if (slotEl && !slotEl.classList.contains('filled')) {
+        slotEl.classList.add('drag-over');
+        dragState.currentSlotHover = slotEl;
+      } else {
+        dragState.currentSlotHover = null;
+      }
+    });
+  }
+
+  // Nasconde temporaneamente la tessera flottante per non intercettare se stessa con elementFromPoint
+  function el_hidden_swap(el, fn) {
+    const prevDisplay = el.style.display;
+    el.style.display = 'none';
+    fn();
+    el.style.display = prevDisplay;
+  }
+
+  function onDragEnd(e) {
+    if (!dragState) return;
+    const { tile, el, originParent, currentSlotHover } = dragState;
+
+    document.removeEventListener(dragState._moveEvt, onDragMove);
+    document.removeEventListener(dragState._upEvt, onDragEnd);
+
+    getSlotElements().forEach(s => s.classList.remove('drag-over'));
+
+    el.classList.remove('floating');
+    el.style.left = '';
+    el.style.top = '';
+    el.style.width = '';
+    el.style.height = '';
+
+    if (currentSlotHover) {
+      const slotIndex = parseInt(currentSlotHover.dataset.slotIndex, 10);
+      placeTileInSlot(tile, slotIndex, currentSlotHover);
+      originParent.appendChild(el); // rimane nel DOM del vassoio ma nascosta (classe placed)
+      el.classList.add('placed');
+    } else {
+      // torna al vassoio
+      originParent.appendChild(el);
+      el.classList.add('pop-back');
+      setTimeout(() => el.classList.remove('pop-back'), 300);
+    }
+
+    dragState = null;
+  }
+
+  function placeTileInSlot(tile, slotIndex, slotEl) {
+    tile.slot = slotIndex;
+    slotEl.classList.add('filled');
+    slotEl.textContent = tile.ch;
+    slotEl.dataset.tileId = tile.id;
+
+    // consente di rimuovere la lettera ricliccando/ritrascinando dallo slot
+    slotEl.onclick = () => removeTileFromSlot(tile, slotEl);
+
+    checkAnagramComplete();
+  }
+
+  function removeTileFromSlot(tile, slotEl) {
+    tile.slot = null;
+    slotEl.classList.remove('filled', 'wrong-flash', 'right-flash');
+    slotEl.textContent = '';
+    slotEl.onclick = null;
+    delete slotEl.dataset.tileId;
+
+    const tileEl = document.querySelector('.letter-tile[data-tile-id="' + tile.id + '"]');
+    if (tileEl) {
+      tileEl.classList.remove('placed');
+      tileEl.classList.add('pop-back');
+      setTimeout(() => tileEl.classList.remove('pop-back'), 300);
+    }
+
+    document.getElementById('anagramFeedback').textContent = '';
+    document.getElementById('anagramFeedback').className = 'feedback';
+  }
+
+  function checkAnagramComplete() {
+    const totalLetterSlots = anagramLayout.filter(i => i.type === 'letter').length;
+    const filledCount = anagramTiles.filter(t => t.slot !== null).length;
+    if (filledCount < totalLetterSlots) return; // non ancora tutti gli slot pieni
+
+    // Ricostruisce la parola formata leggendo gli slot in ordine di posizione
+    const slotEls = getSlotElements().sort((a, b) => parseInt(a.dataset.slotIndex) - parseInt(b.dataset.slotIndex));
+    const formed = slotEls.map(s => s.textContent).join('');
+
+    const feedback = document.getElementById('anagramFeedback');
+    const correct = CONFIG.anagramAcceptedVariants.some(a => normalize(a).replace(/\s/g, '') === normalize(formed));
+
+    if (correct) {
+      slotEls.forEach(s => s.classList.add('right-flash'));
+      feedback.textContent = 'Esatto.';
+      feedback.className = 'feedback success';
+      setTimeout(() => goTo(5), 700);
+    } else {
+      slotEls.forEach(s => s.classList.add('wrong-flash'));
+      feedback.textContent = 'Non è questa parola. Riprova.';
+      feedback.className = 'feedback error';
+
+      // dopo il flash rosso, rimette tutte le lettere reali nel vassoio per ritentare
+      setTimeout(() => {
+        anagramTiles.forEach(tile => {
+          if (tile.slot !== null) {
+            tile.slot = null;
+            const tileEl = document.querySelector('.letter-tile[data-tile-id="' + tile.id + '"]');
+            if (tileEl) tileEl.classList.remove('placed');
+          }
+        });
+        renderAnagramSlots();
+      }, 650);
+    }
+  }
+
+  const MONTHS = ["Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno",
+                  "Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+
+  function initDateSelectors() {
+    const daySelect = document.getElementById('dayInput');
+    const monthSelect = document.getElementById('monthInput');
+    const yearSelect = document.getElementById('yearInput');
+
+    if (daySelect.options.length <= 1) {
+      for (let d = 1; d <= 31; d++) {
+        const opt = document.createElement('option');
+        opt.value = d; opt.textContent = d;
+        daySelect.appendChild(opt);
+      }
+    }
+    if (monthSelect.options.length <= 1) {
+      MONTHS.forEach((m, i) => {
+        const opt = document.createElement('option');
+        opt.value = i + 1; opt.textContent = m;
+        monthSelect.appendChild(opt);
+      });
+    }
+    if (yearSelect.options.length <= 1) {
+      const currentYear = new Date().getFullYear();
+      const startYear = Math.min(CONFIG.correctYear - 5, currentYear - 10);
+      const endYear = currentYear;
+      for (let y = endYear; y >= startYear; y--) {
+        const opt = document.createElement('option');
+        opt.value = y; opt.textContent = y;
+        yearSelect.appendChild(opt);
+      }
+    }
+  }
+
+  function checkDate() {
+    const day = parseInt(document.getElementById('dayInput').value);
+    const month = parseInt(document.getElementById('monthInput').value);
+    const year = parseInt(document.getElementById('yearInput').value);
+    const feedback = document.getElementById('dateFeedback');
+
+    if (!day || !month || !year) {
+      feedback.textContent = 'Seleziona giorno, mese e anno.';
+      feedback.className = 'feedback error';
+      return;
+    }
+
+    if (day === CONFIG.correctDay && month === CONFIG.correctMonth && year === CONFIG.correctYear) {
+      feedback.textContent = 'Perfetto.';
+      feedback.className = 'feedback success';
+      setTimeout(() => goTo(6), 500);
+    } else {
+      feedback.textContent = 'Non è questa data. Riprova.';
+      feedback.className = 'feedback error';
+    }
+  }
+
+  function buildBurst() {
+    const burst = document.getElementById('revealBurst');
+    burst.innerHTML = '';
+    const colors = ['var(--gold)', 'var(--sky)', 'var(--coral)'];
+    const count = 26;
+
+    for (let i = 0; i < count; i++) {
+      const s = document.createElement('div');
+      const isSquare = Math.random() > 0.6;
+      s.className = 'spark' + (isSquare ? ' sq' : '');
+
+      const angle = (Math.PI * 2 * i) / count + (Math.random() * 0.4 - 0.2);
+      const distance = 90 + Math.random() * 130;
+      const dx = Math.cos(angle) * distance;
+      const dy = Math.sin(angle) * distance;
+      const rot = (Math.random() * 360) - 180;
+      const size = 5 + Math.random() * 6;
+
+      s.style.setProperty('--dx', dx + 'px');
+      s.style.setProperty('--dy', dy + 'px');
+      s.style.setProperty('--rot', rot + 'deg');
+      s.style.width = size + 'px';
+      s.style.height = size + 'px';
+      s.style.background = colors[i % colors.length];
+      s.style.animationDelay = (Math.random() * 0.15) + 's';
+
+      burst.appendChild(s);
+    }
+  }
+
+  function triggerReveal() {
+    document.getElementById('finalNote').textContent = CONFIG.finalNote;
+
+    const frame = document.getElementById('ticketFrame');
+    const img = document.getElementById('ticketImage');
+    const placeholder = document.getElementById('ticketPlaceholder');
+    const glow = document.getElementById('revealGlow');
+    const note = document.getElementById('finalNote');
+
+    if (CONFIG.ticketImageSrc && CONFIG.ticketImageSrc.trim() !== '') {
+      img.src = CONFIG.ticketImageSrc;
+      img.style.display = 'block';
+      placeholder.style.display = 'none';
+    } else {
+      img.style.display = 'none';
+      placeholder.style.display = 'block';
+    }
+
+    frame.classList.remove('reveal');
+    glow.classList.remove('show');
+    note.classList.remove('show');
+    buildBurst();
+
+    void frame.offsetWidth;
+
+    glow.classList.add('show');
+
+    const sparks = document.querySelectorAll('.spark');
+    sparks.forEach(s => s.classList.add('show'));
+
+    setTimeout(() => {
+      frame.classList.add('reveal');
+    }, 120);
+
+    setTimeout(() => {
+      note.classList.add('show');
+    }, 900);
+  }
+
+  document.getElementById('riddleQuestion').textContent = CONFIG.riddleQuestion;
+  document.getElementById('quizQuestion').textContent = CONFIG.quizQuestion;
+  document.getElementById('anagramHint').textContent = CONFIG.anagramHint;
+  document.getElementById('dateQuestion').textContent = CONFIG.dateQuestion;
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+
+</body>
+</html>
