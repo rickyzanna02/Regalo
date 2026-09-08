@@ -1,7 +1,7 @@
 {
-  "name": "Il Viaggio",
-  "short_name": "Il Viaggio",
-  "description": "Un viaggio ti aspetta",
+  "name": "Sorpresa",
+  "short_name": "Sorpresa",
+  "description": "Una sorpresa ti aspetta",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
